@@ -23,7 +23,7 @@ function App() {
         </h1>
       </header>
       <main className="join-main">
-        <form action="chat.html">
+        <form>
           <div className="form-control">
             <label htmlFor="username">Username</label>
             <input

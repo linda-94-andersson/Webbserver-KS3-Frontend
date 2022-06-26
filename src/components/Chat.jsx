@@ -9,7 +9,7 @@ function Chat(props) {
         <h1>
           <i class="fas fa-smile"></i> THECHAT
         </h1>
-        <a href="index.html" class="btn">
+        <a class="btn">
           Leave Room
         </a>
       </header>
