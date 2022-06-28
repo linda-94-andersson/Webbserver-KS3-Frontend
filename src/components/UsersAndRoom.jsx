@@ -2,49 +2,48 @@ import React, { useState, useEffect } from "react";
 import socket from "../socket";
 
 function UsersAndRoom(props) {
-  const roomName = document.getElementById("room-name");
-  const userList = document.getElementById("users");
-
   useEffect(() => {
-    socket.on("roomUsers", ({ room, users }) => {
-      console.log(room, " this is undefined room");
-      console.log(users, " this is users in roomUsers");
-      outputRoomName(room);
-      outputUsers(users.username);
+    // socket.on("roomUsers", ({ room, users }) => {
+    //   // console.log(room, " this is undefined room");
+    //   // console.log(users, " this is users in roomUsers");
+    //   // outputRoomName(room);
+    //   // outputUsers(users.username);
+    // });
+
+    socket.on("Users", (user) => {
+      props.setUsers(user);
     });
 
-    return () => {
-      socket.off("roomUsers");
-    };
+    socket.emit("getAllUsers", () => {});
   }, []);
 
-  function outputRoomName(room) {
-    roomName.innerText = room;
-    return room;
-  }
+  const renderRooms = () => {
+    if (!props.rooms) return <li>Loading rooms...</li>;
+    return Array.from(props.rooms).map((r) => {
+      const { room } = r;
+      return <li key={room}>{room}</li>;
+    });
+  };
 
-  function outputUsers(users) {
-    userList.innerHTML = `
-    ${Array.from(users)
-      .map((user) => `<li>${user.username}</li>`)
-      .join("")}
-    `;
-    return users;
-  }
+  const renderUsers = () => {
+    if (!props.users) return <li>Loading users...</li>;
+    return Array.from(props.users).map((user) => {
+      const { id, username } = user;
+      return <li key={id}>{username}</li>;
+    });
+  };
 
   return (
-      <div className="chat-sidebar">
-        <h3>
-          <i className="fas fa-comments"></i> Room Name:
-        </h3>
-        <h2 id="room-name">{props.room}</h2>
-        <h3>
-          <i className="fas fa-users"></i> Users
-        </h3>
-        <ul id="users">
-          <li>{props.username}</li>
-        </ul>
-      </div>
+    <div className="chat-sidebar">
+      <h3>
+        <i className="fas fa-comments"></i> Room Name:
+      </h3>
+      <h2 id="room-name">{renderRooms()}</h2>
+      <h3>
+        <i className="fas fa-users"></i> Users
+      </h3>
+      <ul id="users">{renderUsers()}</ul>
+    </div>
   );
 }
 

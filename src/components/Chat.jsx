@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import socket from "../socket";
 import UsersAndRoom from "./UsersAndRoom";
 
@@ -8,38 +7,24 @@ function Chat(props) {
   const [messages, setMessages] = useState([]);
 
   //   console.log(message, " this is message singlaur");
-  console.log(messages, " this is messages plural");
+  //   console.log(messages, " this is messages plural");
   //   const [username, setUsername] = useState("");
   //   const [room, setRoom] = useState("");
 
-  //   console.log(props.room, " this is props room");
-  //   console.log(props.username, " this is props username");
+  // console.log(props.room, " this is props room");
+  // console.log(props.username, " this is props username");
 
-  const chatMessages = document.querySelector(".chat-messages");
+  //   const chatMessages = document.querySelector(".chat-messages");
 
-  useEffect((username, room) => {
-    socket.on("connect", () => {
-      console.log(`Connected to socketID ${socket.id}`);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log(`Server disconnected. Reason ${reason}`);
-    });
-
-    socket.emit("joinRoom", { username, room });
+  useEffect(() => {
+    socket.emit("userLeft", () => {});
 
     socket.on("message", (msg) => {
       //   outputMessage(message);
       setMessages(msg);
       console.log(msg, " this is msg");
-
       //   chatMessages.scrollTop = chatMessages.scrollHeight;
     });
-
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-    };
   }, []);
 
   //   function outputMessage(message) {
@@ -60,12 +45,13 @@ function Chat(props) {
     e.target.focus();
   }
 
-  function leaveRoom() {
-    console.log("Left the room");
-    socket.disconnect();
+  function handelLeaveRoom() {
+    console.log(`${props.username} has left the chatroom ${props.room}`);
+    props.setShowChat(false);
+    socket.emit("deleteUser");
   }
 
-  function deleteRoom() {
+  function handelDeleteRoom() {
     console.log("Room deleted");
   }
 
@@ -76,30 +62,33 @@ function Chat(props) {
           <i className="fas fa-smile"></i> THECHAT
         </h1>
         <div className="chat-header">
-          <Link to="/">
-            <button className="btn" onClick={deleteRoom}>
-              Delete Room
-            </button>
-          </Link>
-        </div>
-        <Link to="/">
-          <button className="btn" onClick={leaveRoom}>
-            Leave Room
+          <button className="btn" onClick={handelDeleteRoom}>
+            Delete Room
           </button>
-        </Link>
+        </div>
+        <button className="btn" onClick={handelLeaveRoom}>
+          Leave Room
+        </button>
       </header>
       <main className="chat-main">
-        <UsersAndRoom room={props.room} username={props.username} />
+        <UsersAndRoom
+          room={props.room}
+          username={props.username}
+          rooms={props.rooms}
+          setUsers={props.setUsers}
+          users={props.users}
+        />
         <div className="chat-messages">
-          {messages && Array.from(messages).map((message) => {
-            return (
-              <div className="message" key={message}>
-                {/* <p className="meta">{message.username.username}</p> */}
-                {/* <span>{message.time}</span> */}
-                <p className="text">{message}</p>
-              </div>
-            );
-          })}
+          {messages &&
+            Array.from(messages).map((message) => {
+              return (
+                <div className="message" key={message}>
+                  {/* <p className="meta">{message.username.username}</p> */}
+                  {/* <span>{message.time}</span> */}
+                  <p className="text">{message}</p>
+                </div>
+              );
+            })}
         </div>
       </main>
       <div className="chat-form-container">
