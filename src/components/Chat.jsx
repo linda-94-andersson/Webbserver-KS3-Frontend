@@ -5,6 +5,7 @@ import socket from "../socket";
 import UsersAndRoom from "./UsersAndRoom";
 
 function Chat(props) {
+  const section = document.querySelector(".chat-messages");
   const [room, setRoom] = useRecoilState(roomState);
   const [rooms, setRooms] = useRecoilState(roomsState);
 
@@ -15,25 +16,8 @@ function Chat(props) {
 
     socket.on("sentMessage", (data) => {
       props.setMessages(data);
-      console.log(data, " this is data msg");
-      //   chatMessages.scrollTop = chatMessages.scrollHeight;
-      //   const scrollToTop = () => {
-      //     window.scrollTo({
-      //       top: 0,
-      //       behavior: "smooth",
-      //     });
-      //   };
     });
   }, []);
-
-  function handleMessage(message) {
-    console.log("message sent");
-    socket.emit("chatMessage", {
-      message,
-      roomName: room,
-      username: props.username,
-    });
-  }
 
   function handelLeaveRoom() {
     console.log(`${props.username.username} has left the chatroom ${room}`);
@@ -46,6 +30,15 @@ function Chat(props) {
     socket.emit("deleteUser", props.username);
     socket.emit("deleteRoom", room);
     props.setShowChat(false);
+  }
+
+  function handleMessage(message) {
+    console.log("message sent");
+    socket.emit("chatMessage", {
+      message,
+      roomName: room,
+      username: props.username,
+    });
   }
 
   const renderMessages = () => {
@@ -93,7 +86,12 @@ function Chat(props) {
         <div className="chat-messages">{renderMessages()}</div>
       </main>
       <div className="chat-form-container">
-        <form id="chat-form" onSubmit={(e) => e.preventDefault()}>
+        <form
+          id="chat-form"
+          onSubmit={(e) => (
+            e.preventDefault(), (section.scrollTop = section.scrollHeight)
+          )}
+        >
           <input
             id="msg"
             type="text"
@@ -101,11 +99,10 @@ function Chat(props) {
             required
             autoComplete="off"
             value={props.message}
-            onChange={(e) => (
-              props.setMessage(e.target.value),
-              (e.target.value = ""),
-              e.target.focus()
-            )}
+            onChange={(e) => props.setMessage(e.target.value)}
+            onClick={(e) => {
+              (e.target.value = ""), e.target.focus();
+            }}
           />
           <button
             className="btn"

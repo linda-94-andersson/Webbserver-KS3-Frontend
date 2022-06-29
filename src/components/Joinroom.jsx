@@ -38,7 +38,7 @@ function Joinroom(props) {
   function handelJoinRoom() {
     socket.emit("createUser", props.username);
     socket.emit("joinRoom", { room: room, username: props.username });
-    console.log(`Joined the room ${room}`);
+    console.log(`Joined ${room}`);
     props.setShowChat(true);
   }
 
