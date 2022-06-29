@@ -1,39 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { roomState, roomsState } from "../atoms/atom";
 import socket from "../socket";
 
 function Createroom(props) {
+  const [room, setRoom] = useRecoilState(roomState);
+  const [rooms, setRooms] = useRecoilState(roomsState);
+
   useEffect(() => {
     socket.on("roomCreated", (room) => {
-      props.setRoom(room);
+      setRoom(room);
     });
-
-    socket.on("Rooms", (rooms) => {
-      props.setRooms(rooms);
-    });
-
-    socket.on("username", (user) => {
-      props.setUsername(user);
-    });
-
-    socket.on("joinedRoom", (data) => {
-      const { room } = data;
-      props.setRoom(room);
-    });
-
-    socket.emit("getAllRooms", () => {});
   }, []);
 
   function handelCreateRoom() {
-    console.log(`Created room ${props.room}`);
-    socket.emit("createRoom", props.room);
+    console.log(`Created room ${room}`);
     socket.emit("createUser", props.username);
-    socket.emit("joinRoom", props.room);
+    socket.emit("joinRoom", { room: room, username: props.username });
+    socket.emit("createRoom", room);
     socket.emit("getAllRooms");
     props.setShowChat(true);
   }
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} style={{ paddingBottom: 55 }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+      }}
+      style={{ paddingBottom: 55 }}
+    >
       <div className="form-control">
         <label htmlFor="username">Username</label>
         <input
@@ -53,8 +48,8 @@ function Createroom(props) {
           name="room"
           id="room"
           placeholder="Enter room name..."
-          value={props.room}
-          onChange={(e) => props.setRoom(e.target.value)}
+          value={room}
+          onChange={(e) => setRoom(e.target.value)}
           required
         />
       </div>

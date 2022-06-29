@@ -1,37 +1,53 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { roomState, roomsState } from "../atoms/atom";
 import socket from "../socket";
 
 function Joinroom(props) {
+  const [room, setRoom] = useRecoilState(roomState);
+  const [rooms, setRooms] = useRecoilState(roomsState);
+
   useEffect(() => {
-    socket.on("Rooms", (rooms) => {
-      props.setRooms(rooms);
-    });
-
-    socket.emit("getAllRooms", () => {});
-
-    socket.on("joinedRoom", (data) => {
-      const { room } = data;
-      props.setRoom(room);
+    socket.on("rooms", (rooms) => {
+      setRooms(rooms);
     });
 
     socket.on("username", (user) => {
-      props.setUsername(user);
+      if (user !== "error") {
+        props.setUsername(user);
+      } else {
+        alert("User already exists! Pick a new name!");
+        socket.emit("deleteUser", user);
+        props.setShowChat(false);
+        return;
+      }
     });
+
+    socket.on("joinedRoom", (data) => {
+      console.log(data, " this is data");
+      setRoom(data);
+    });
+
+    socket.on("users", (allusers) => {
+      props.setUsers(allusers);
+    });
+
+    socket.emit("getAllRooms", () => {});
   }, []);
 
   function handelJoinRoom() {
-    console.log(`Joined the room ${props.room}`);
     socket.emit("createUser", props.username);
-    socket.emit("joinRoom", props.room);
-    props.setShowChat(true); 
+    socket.emit("joinRoom", { room: room, username: props.username });
+    console.log(`Joined the room ${room}`);
+    props.setShowChat(true);
   }
 
   const renderRooms = () => {
-    if (!props.rooms.length) return <option>Loading rooms...</option>;
-    return props.rooms.map((rooms) => {
+    if (!rooms) return <option>Loading rooms...</option>;
+    return rooms.map((rooms) => {
       const { id, room } = rooms;
       return (
-        <option key={id} value={id}>
+        <option key={id} value={room}>
           {room}
         </option>
       );
@@ -54,7 +70,7 @@ function Joinroom(props) {
       </div>
       <div className="form-control">
         <label htmlFor="room">Join room</label>
-        <select id="list" onChange={(e) => props.setRoom(e.target.value)}>
+        <select id="list" onClick={(e) => setRoom(e.target.value)}>
           {renderRooms()}
         </select>
       </div>

@@ -1,59 +1,77 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { roomState, roomsState } from "../atoms/atom";
 import socket from "../socket";
 import UsersAndRoom from "./UsersAndRoom";
 
 function Chat(props) {
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-
-  //   console.log(message, " this is message singlaur");
-  //   console.log(messages, " this is messages plural");
-  //   const [username, setUsername] = useState("");
-  //   const [room, setRoom] = useState("");
-
-  // console.log(props.room, " this is props room");
-  // console.log(props.username, " this is props username");
-
-  //   const chatMessages = document.querySelector(".chat-messages");
+  const [room, setRoom] = useRecoilState(roomState);
+  const [rooms, setRooms] = useRecoilState(roomsState);
 
   useEffect(() => {
-    socket.emit("userLeft", () => {});
+    socket.on("userLeft", () => {});
 
-    socket.on("message", (msg) => {
-      //   outputMessage(message);
-      setMessages(msg);
-      console.log(msg, " this is msg");
+    socket.on("roomDeleted", () => {});
+
+    socket.on("sentMessage", (data) => {
+      props.setMessages(data);
+      console.log(data, " this is data msg");
       //   chatMessages.scrollTop = chatMessages.scrollHeight;
+      //   const scrollToTop = () => {
+      //     window.scrollTo({
+      //       top: 0,
+      //       behavior: "smooth",
+      //     });
+      //   };
     });
   }, []);
 
-  //   function outputMessage(message) {
-  //     const div = document.createElement("div");
-  //     div.classList.add("message");
-  //     div.innerHTML = `<p class="meta">${message.username} <span>${message.time}</span></p>
-  //     <p class="text">
-  //        ${message.text}
-  //     </p>`;
-  //     document.querySelector(".chat-messages").appendChild(div);
-  //   }
-
-  function handleMessage(e, message) {
+  function handleMessage(message) {
     console.log("message sent");
-    e.preventDefault();
-    socket.emit("chatMessage", message);
-    e.target.value = "";
-    e.target.focus();
+    socket.emit("chatMessage", {
+      message,
+      roomName: room,
+      username: props.username,
+    });
   }
 
   function handelLeaveRoom() {
-    console.log(`${props.username} has left the chatroom ${props.room}`);
+    console.log(`${props.username.username} has left the chatroom ${room}`);
+    socket.emit("deleteUser", props.username);
     props.setShowChat(false);
-    socket.emit("deleteUser");
   }
 
   function handelDeleteRoom() {
-    console.log("Room deleted");
+    console.log(`${room} room deleted`);
+    socket.emit("deleteUser", props.username);
+    socket.emit("deleteRoom", room);
+    props.setShowChat(false);
   }
+
+  const renderMessages = () => {
+    if (!props.messages.length)
+      return (
+        <div className="message">
+          <div className="meta">
+            Admin
+            <span> time here</span>
+            <p className="text">Welcome to THECHAT!</p>
+          </div>
+        </div>
+      );
+    return props.messages.map((msg) => {
+      const { id, message, username, date } = msg;
+      return (
+        <div className="message" key={id}>
+          <div className="meta">
+            {username}
+            <span> {date}</span>
+            <p className="text">{message}</p>
+          </div>
+        </div>
+      );
+    });
+  };
 
   return (
     <div className="chat-container">
@@ -71,41 +89,28 @@ function Chat(props) {
         </button>
       </header>
       <main className="chat-main">
-        <UsersAndRoom
-          room={props.room}
-          username={props.username}
-          rooms={props.rooms}
-          setUsers={props.setUsers}
-          users={props.users}
-        />
-        <div className="chat-messages">
-          {messages &&
-            Array.from(messages).map((message) => {
-              return (
-                <div className="message" key={message}>
-                  {/* <p className="meta">{message.username.username}</p> */}
-                  {/* <span>{message.time}</span> */}
-                  <p className="text">{message}</p>
-                </div>
-              );
-            })}
-        </div>
+        <UsersAndRoom username={props.username} />
+        <div className="chat-messages">{renderMessages()}</div>
       </main>
       <div className="chat-form-container">
-        <form id="chat-form">
+        <form id="chat-form" onSubmit={(e) => e.preventDefault()}>
           <input
             id="msg"
             type="text"
             placeholder="Enter Message"
             required
             autoComplete="off"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={props.message}
+            onChange={(e) => (
+              props.setMessage(e.target.value),
+              (e.target.value = ""),
+              e.target.focus()
+            )}
           />
           <button
             className="btn"
-            onClick={(e) => {
-              handleMessage(e, message);
+            onClick={() => {
+              handleMessage(props.message);
             }}
           >
             <i className="fas fa-paper-plane"></i> Send
