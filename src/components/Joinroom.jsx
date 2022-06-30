@@ -1,11 +1,20 @@
 import React, { useEffect } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { roomState, roomsState } from "../atoms/atom";
+import { useRecoilState } from "recoil";
+import {
+  roomState,
+  roomsState,
+  usersState,
+  showChatState,
+  usernameState,
+} from "../atoms/atom";
 import socket from "../socket";
 
-function Joinroom(props) {
+function Joinroom() {
   const [room, setRoom] = useRecoilState(roomState);
   const [rooms, setRooms] = useRecoilState(roomsState);
+  const [username, setUsername] = useRecoilState(usernameState);
+  const [showChat, setShowChat] = useRecoilState(showChatState);
+  const [users, setUsers] = useRecoilState(usersState);
 
   useEffect(() => {
     socket.on("rooms", (rooms) => {
@@ -14,11 +23,11 @@ function Joinroom(props) {
 
     socket.on("username", (user) => {
       if (user !== "error") {
-        props.setUsername(user);
+        setUsername(user);
       } else {
         alert("User already exists! Pick a new name!");
         socket.emit("deleteUser", user);
-        props.setShowChat(false);
+        setShowChat(false);
         return;
       }
     });
@@ -28,17 +37,24 @@ function Joinroom(props) {
     });
 
     socket.on("users", (allusers) => {
-      props.setUsers(allusers);
+      setUsers(allusers);
     });
 
     socket.emit("getAllRooms", () => {});
+
+    setUsername("");
   }, []);
 
   function handelJoinRoom() {
-    socket.emit("createUser", props.username);
-    socket.emit("joinRoom", { room: room, username: props.username });
+    socket.emit("createUser", username);
+    socket.emit("joinRoom", { room: room, username: username });
+    socket.emit("chatMessage", {
+      message: `Welcome ${username} to THECHAT!`,
+      roomName: room,
+      username: "Admin",
+    });
     console.log(`Joined ${room}`);
-    props.setShowChat(true);
+    setShowChat(true);
   }
 
   const renderRooms = () => {
@@ -62,8 +78,8 @@ function Joinroom(props) {
           name="username"
           id="username"
           placeholder="Enter username..."
-          value={props.username}
-          onChange={(e) => props.setUsername(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
       </div>

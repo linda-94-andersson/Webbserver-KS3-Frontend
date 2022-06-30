@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import socket from "../socket";
-import { useRecoilValue } from "recoil";
-import { roomState } from "../atoms/atom";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { activeUsersState, roomState, usernameState } from "../atoms/atom";
 
-function UsersAndRoom(props) {
-  const [activeUsers, setActiveUsers] = useState([]);
+function UsersAndRoom() {
+  const [activeUsers, setActiveUsers] = useRecoilState(activeUsersState);
   const room = useRecoilValue(roomState);
+  const username = useRecoilValue(usernameState);
 
   useEffect(() => {
-    socket.emit("getActiveUsers", { room: room, username: props.username });
+    socket.emit("getActiveUsers", { room: room, username: username });
 
     socket.on("usersActive", (data) => {
       setActiveUsers(data);
     });
-  }, []);
+  }, ["joinedRoom"]);
 
   const renderRooms = () => {
     if (!room) {

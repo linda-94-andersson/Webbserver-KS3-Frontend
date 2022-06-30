@@ -1,68 +1,88 @@
 import React, { useEffect } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
-import { roomState, roomsState } from "../atoms/atom";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import {
+  messagesState,
+  messageState,
+  roomState,
+  showChatState,
+  usernameState,
+} from "../atoms/atom";
+import moment from "moment";
 import socket from "../socket";
 import UsersAndRoom from "./UsersAndRoom";
 
-function Chat(props) {
+function Chat() {
   const section = document.querySelector(".chat-messages");
-  const [room, setRoom] = useRecoilState(roomState);
-  const [rooms, setRooms] = useRecoilState(roomsState);
+  const room = useRecoilValue(roomState);
+  const username = useRecoilValue(usernameState);
+  const [message, setMessage] = useSetRecoilState(messageState);
+  const [messages, setMessages] = useSetRecoilState(messagesState);
+  const [showChat, setShowChat] = useSetRecoilState(showChatState);
 
   useEffect(() => {
     socket.on("userLeft", () => {});
 
     socket.on("roomDeleted", () => {});
 
+    socket.on("getAllMessages", (data) => {
+      setMessages(data);
+    });
+
     socket.on("sentMessage", (data) => {
-      props.setMessages(data);
+      setMessages(data);
     });
   }, []);
 
   function handelLeaveRoom() {
-    console.log(`${props.username.username} has left the chatroom ${room}`);
-    socket.emit("deleteUser", props.username);
-    props.setShowChat(false);
+    console.log(`${username} has left the chatroom ${room}`);
+    socket.emit("deleteUser", username);
+    setShowChat(false);
   }
 
   function handelDeleteRoom() {
     console.log(`${room} room deleted`);
-    socket.emit("deleteUser", props.username);
+    socket.emit("deleteUser", username);
     socket.emit("deleteRoom", room);
-    props.setShowChat(false);
+    setShowChat(false);
   }
 
-  function handleMessage(message) {
-    console.log("message sent");
+  function handleMessage(message, e) {
     socket.emit("chatMessage", {
-      message,
+      message: message,
       roomName: room,
-      username: props.username,
+      username: username,
     });
+    setMessage("");
+    e.target.focus();
+    setTimeout(() => {
+      section.scrollTop = section.scrollHeight;
+    }, 50);
   }
 
   const renderMessages = () => {
-    if (!props.messages.length)
-      return (
-        <div className="message">
-          <div className="meta">
-            Admin
-            <span> time here</span>
-            <p className="text">Welcome to THECHAT!</p>
-          </div>
+    if (!messages.length) {
+      <div className="message">
+        <div className="meta">
+          Admin
+          <span> {moment().format("HH:mm")}</span>
+          <p className="text">Welcome to THECHAT!</p>
         </div>
-      );
-    return props.messages.map((msg) => {
-      const { id, message, username, date } = msg;
-      return (
-        <div className="message" key={id}>
-          <div className="meta">
-            {username}
-            <span> {date}</span>
-            <p className="text">{message}</p>
+      </div>;
+      return;
+    }
+    return messages.map((msg) => {
+      if (msg.roomName === room) {
+        return (
+          <div className="message" key={msg.id}>
+            <div className="meta">
+              {msg.username}
+              <span> {msg.date}</span>
+              <p className="text">{msg.message}</p>
+            </div>
           </div>
-        </div>
-      );
+        );
+      }
+      return;
     });
   };
 
@@ -82,32 +102,24 @@ function Chat(props) {
         </button>
       </header>
       <main className="chat-main">
-        <UsersAndRoom username={props.username} />
+        <UsersAndRoom />
         <div className="chat-messages">{renderMessages()}</div>
       </main>
       <div className="chat-form-container">
-        <form
-          id="chat-form"
-          onSubmit={(e) => (
-            e.preventDefault(), (section.scrollTop = section.scrollHeight)
-          )}
-        >
+        <form id="chat-form" onSubmit={(e) => e.preventDefault()}>
           <input
             id="msg"
             type="text"
             placeholder="Enter Message"
             required
             autoComplete="off"
-            value={props.message}
-            onChange={(e) => props.setMessage(e.target.value)}
-            onClick={(e) => {
-              (e.target.value = ""), e.target.focus();
-            }}
-          />
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          ></input>
           <button
             className="btn"
-            onClick={() => {
-              handleMessage(props.message);
+            onClick={(e) => {
+              handleMessage(message, e);
             }}
           >
             <i className="fas fa-paper-plane"></i> Send

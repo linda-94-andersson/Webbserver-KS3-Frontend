@@ -1,25 +1,34 @@
 import React, { useEffect } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { roomState, roomsState } from "../atoms/atom";
+import { roomState, showChatState, usernameState } from "../atoms/atom";
 import socket from "../socket";
 
-function Createroom(props) {
+function Createroom() {
   const [room, setRoom] = useRecoilState(roomState);
-  const [rooms, setRooms] = useRecoilState(roomsState);
+  const [username, setUsername] = useRecoilState(usernameState);
+  const [showChat, setShowChat] = useRecoilState(showChatState);
 
   useEffect(() => {
     socket.on("roomCreated", (room) => {
       setRoom(room);
     });
+
+    setRoom("");
+    setUsername("");
   }, []);
 
   function handelCreateRoom() {
     console.log(`Created room ${room}`);
-    socket.emit("createUser", props.username);
-    socket.emit("joinRoom", { room: room, username: props.username });
+    socket.emit("createUser", username);
+    socket.emit("joinRoom", { room: room, username: username });
     socket.emit("createRoom", room);
     socket.emit("getAllRooms");
-    props.setShowChat(true);
+    socket.emit("chatMessage", {
+      message: `Welcome ${username} to THECHAT!`,
+      roomName: room,
+      username: "Admin",
+    });
+    setShowChat(true);
   }
 
   return (
@@ -36,8 +45,8 @@ function Createroom(props) {
           name="username"
           id="username"
           placeholder="Enter username..."
-          value={props.username}
-          onChange={(e) => props.setUsername(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
       </div>
