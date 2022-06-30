@@ -66,10 +66,11 @@ function Chat() {
     });
     setMessage("");
     setTyping("");
-    setTimeout(() => {
-      section.scrollTop = section.scrollHeight;
-    }, 50);
   }
+
+  setTimeout(() => {
+    section.scrollTop = section.scrollHeight;
+  }, 50);
 
   const handleTyping = (typing) => {
     socket.emit("handle_typing", {

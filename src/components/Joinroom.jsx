@@ -24,6 +24,7 @@ function Joinroom() {
     socket.on("username", (user) => {
       if (user !== "error") {
         setUsername(user);
+        setShowChat(true);
       } else {
         alert("User already exists! Pick a new name!");
         socket.emit("deleteUser", user);
@@ -54,7 +55,6 @@ function Joinroom() {
       username: "Admin",
     });
     console.log(`Joined ${room}`);
-    setShowChat(true);
   }
 
   const renderRooms = () => {
