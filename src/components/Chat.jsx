@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import {
   messagesState,
   messageState,
@@ -15,9 +15,9 @@ function Chat() {
   const section = document.querySelector(".chat-messages");
   const room = useRecoilValue(roomState);
   const username = useRecoilValue(usernameState);
-  const [message, setMessage] = useSetRecoilState(messageState);
-  const [messages, setMessages] = useSetRecoilState(messagesState);
-  const [showChat, setShowChat] = useSetRecoilState(showChatState);
+  const [message, setMessage] = useRecoilState(messageState);
+  const [messages, setMessages] = useRecoilState(messagesState);
+  const [showChat, setShowChat] = useRecoilState(showChatState);
 
   useEffect(() => {
     socket.on("userLeft", () => {});
