@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { RecoilRoot, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 import { showChatState } from "./atoms/atom";
 import Createroom from "./components/Createroom";
 import Joinroom from "./components/Joinroom";
@@ -26,27 +26,23 @@ function App() {
 
   socket.connect();
 
-  return (
-    <RecoilRoot>
-      {!showChat ? (
-        <div className="join-container">
-          <header className="join-header">
-            <h1>
-              <i className="fas fa-smile"></i> THECHAT
-            </h1>
-            <br />
-            <span>Welcome to THECHAT! Create a room to start!</span>
-          </header>
-          <main className="join-main">
-            <Createroom />
-            ...or join an existing room!
-            <Joinroom />
-          </main>
-        </div>
-      ) : (
-        <Chat />
-      )}
-    </RecoilRoot>
+  return !showChat ? (
+    <div className="join-container">
+      <header className="join-header">
+        <h1>
+          <i className="fas fa-smile"></i> THECHAT
+        </h1>
+        <br />
+        <span>Welcome to THECHAT! Create a room to start!</span>
+      </header>
+      <main className="join-main">
+        <Createroom />
+        ...or join an existing room!
+        <Joinroom />
+      </main>
+    </div>
+  ) : (
+    <Chat />
   );
 }
 
