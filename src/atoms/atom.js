@@ -39,3 +39,8 @@ export const activeUsersState = atom({
     key: "activeUsersState",
     default: [],
 });
+
+export const typingState = atom({
+    key: "typingState",
+    default: "",
+});

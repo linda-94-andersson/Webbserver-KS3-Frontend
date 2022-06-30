@@ -5,9 +5,10 @@ import {
   messageState,
   roomState,
   showChatState,
+  typingState,
   usernameState,
 } from "../atoms/atom";
-import moment from "moment";
+import Emoji from "react-emoji-render";
 import socket from "../socket";
 import UsersAndRoom from "./UsersAndRoom";
 
@@ -18,6 +19,7 @@ function Chat() {
   const [message, setMessage] = useRecoilState(messageState);
   const [messages, setMessages] = useRecoilState(messagesState);
   const [showChat, setShowChat] = useRecoilState(showChatState);
+  const [typing, setTyping] = useRecoilState(typingState);
 
   useEffect(() => {
     socket.on("userLeft", () => {});
@@ -30,6 +32,11 @@ function Chat() {
 
     socket.on("sentMessage", (data) => {
       setMessages(data);
+    });
+
+    socket.on("is_typing", ({ typing, username }) => {
+      if (typing) setTyping(`${username} is typing...`);
+      if (!typing) setTyping("");
     });
   }, []);
 
@@ -46,38 +53,42 @@ function Chat() {
     setShowChat(false);
   }
 
-  function handleMessage(message, e) {
+  function handleMessage(msg, e) {
     socket.emit("chatMessage", {
-      message: message,
+      message: msg,
       roomName: room,
       username: username,
     });
     setMessage("");
+    setTyping("");
     e.target.focus();
     setTimeout(() => {
       section.scrollTop = section.scrollHeight;
     }, 50);
   }
 
+  const handleTyping = (typing) => {
+    socket.emit("handle_typing", {
+      typing,
+      username: username,
+      room: room,
+    });
+  };
+
   const renderMessages = () => {
     if (!messages.length) {
-      <div className="message">
-        <div className="meta">
-          Admin
-          <span> {moment().format("HH:mm")}</span>
-          <p className="text">Welcome to THECHAT!</p>
-        </div>
-      </div>;
-      return;
+      return <p className="text">Nothing to show</p>;
     }
     return messages.map((msg) => {
-      if (msg.roomName === room) {
+      if (msg.room_name === room) {
         return (
           <div className="message" key={msg.id}>
             <div className="meta">
               {msg.username}
               <span> {msg.date}</span>
-              <p className="text">{msg.message}</p>
+              <p className="text">
+                <Emoji text={msg.message} />
+              </p>
             </div>
           </div>
         );
@@ -106,6 +117,7 @@ function Chat() {
         <div className="chat-messages">{renderMessages()}</div>
       </main>
       <div className="chat-form-container">
+        <span className="text">{typing}</span>
         <form id="chat-form" onSubmit={(e) => e.preventDefault()}>
           <input
             id="msg"
@@ -115,11 +127,13 @@ function Chat() {
             autoComplete="off"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            onFocus={() => handleTyping(true)}
+            onBlur={() => handleTyping(false)}
           ></input>
           <button
             className="btn"
             onClick={(e) => {
-              handleMessage(message, e);
+              handleMessage(msg, e);
             }}
           >
             <i className="fas fa-paper-plane"></i> Send
