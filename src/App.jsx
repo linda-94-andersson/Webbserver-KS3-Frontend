@@ -1,23 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { RecoilRoot } from "recoil";
+import React, { useEffect } from "react";
+import { RecoilRoot, useRecoilValue } from "recoil";
+import { showChatState } from "./atoms/atom";
 import Createroom from "./components/Createroom";
 import Joinroom from "./components/Joinroom";
 import Chat from "./components/Chat";
 import socket from "./socket";
 
 function App() {
-  const [showChat, setShowChat] = useState(false);
-  const [username, setUsername] = useState("");
-  const [users, setUsers] = useState([]);
-  const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
+  const showChat = useRecoilValue(showChatState);
 
   useEffect(() => {
     socket.on("connect", () => {
       console.log(`Connected to socketID ${socket.id}`);
     });
 
-    socket.emit("getAllUsers");
+    socket.emit("getAllUsers", () => {});
 
     socket.on("disconnect", (reason) => {
       console.log(`Server disconnected. Reason ${reason}`);
@@ -41,34 +38,13 @@ function App() {
             <span>Welcome to THECHAT! Create a room to start!</span>
           </header>
           <main className="join-main">
-            <Createroom
-              setShowChat={setShowChat}
-              username={username}
-              setUsername={setUsername}
-              users={users}
-              setUsers={setUsers}
-            />
+            <Createroom />
             ...or join an existing room!
-            <Joinroom
-              setShowChat={setShowChat}
-              username={username}
-              setUsername={setUsername}
-              users={users}
-              setUsers={setUsers}
-            />
+            <Joinroom />
           </main>
         </div>
       ) : (
-        <Chat
-          setShowChat={setShowChat}
-          username={username}
-          users={users}
-          setUsers={setUsers}
-          message={message}
-          setMessage={setMessage}
-          messages={messages}
-          setMessages={setMessages}
-        />
+        <Chat />
       )}
     </RecoilRoot>
   );
