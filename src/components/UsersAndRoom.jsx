@@ -14,7 +14,7 @@ function UsersAndRoom() {
     socket.on("usersActive", (data) => {
       setActiveUsers(data);
     });
-  }, ["joinedRoom"]);
+  }, []);
 
   const renderRooms = () => {
     if (!room) {

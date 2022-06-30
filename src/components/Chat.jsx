@@ -42,6 +42,11 @@ function Chat() {
 
   function handelLeaveRoom() {
     console.log(`${username} has left the chatroom ${room}`);
+    socket.emit("chatMessage", {
+      message: `${username} has left THECHAT!`,
+      roomName: room,
+      username: "Admin",
+    });
     socket.emit("deleteUser", username);
     setShowChat(false);
   }
@@ -53,15 +58,14 @@ function Chat() {
     setShowChat(false);
   }
 
-  function handleMessage(msg, e) {
+  function handleMessage(message) {
     socket.emit("chatMessage", {
-      message: msg,
+      message,
       roomName: room,
       username: username,
     });
     setMessage("");
     setTyping("");
-    e.target.focus();
     setTimeout(() => {
       section.scrollTop = section.scrollHeight;
     }, 50);
@@ -123,7 +127,6 @@ function Chat() {
             id="msg"
             type="text"
             placeholder="Enter Message"
-            required
             autoComplete="off"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -132,8 +135,8 @@ function Chat() {
           ></input>
           <button
             className="btn"
-            onClick={(e) => {
-              handleMessage(msg, e);
+            onClick={() => {
+              handleMessage(message);
             }}
           >
             <i className="fas fa-paper-plane"></i> Send

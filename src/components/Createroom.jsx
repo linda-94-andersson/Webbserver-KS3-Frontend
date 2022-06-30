@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { roomState, showChatState, usernameState } from "../atoms/atom";
 import socket from "../socket";
 

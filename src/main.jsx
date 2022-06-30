@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             exact
             element={
               <RecoilRoot>
-                <App />{" "}
+                <App />
               </RecoilRoot>
             }
           />
