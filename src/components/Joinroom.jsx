@@ -24,7 +24,6 @@ function Joinroom(props) {
     });
 
     socket.on("joinedRoom", (data) => {
-      console.log(data, " this is data");
       setRoom(data);
     });
 

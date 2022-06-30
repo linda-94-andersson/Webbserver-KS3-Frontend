@@ -3,11 +3,13 @@ import socket from "../socket";
 import { useRecoilValue } from "recoil";
 import { roomState } from "../atoms/atom";
 
-function UsersAndRoom() {
+function UsersAndRoom(props) {
   const [activeUsers, setActiveUsers] = useState([]);
   const room = useRecoilValue(roomState);
 
   useEffect(() => {
+    socket.emit("getActiveUsers", { room: room, username: props.username });
+
     socket.on("usersActive", (data) => {
       setActiveUsers(data);
     });
@@ -22,8 +24,12 @@ function UsersAndRoom() {
 
   const renderUsers = () => {
     if (!activeUsers) return <li>Loading users...</li>;
-    return activeUsers.map((user) => {
-      return <li key={user.username}>{user.username}</li>;
+
+    return activeUsers.map((room_name) => {
+      if (room_name.active_room === room) {
+        return <li key={room_name.username}>{room_name.username}</li>;
+      }
+      return;
     });
   };
 
