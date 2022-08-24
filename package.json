@@ -4,10 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "start": "serve -s build",
     "build": "vite build",
-    "preview": "vite preview",
-    "heroku-postbuild": "npm run build"
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^18.0.0",
@@ -15,7 +13,6 @@
     "react-emoji-render": "^1.2.4",
     "react-router-dom": "^6.3.0",
     "recoil": "^0.7.4",
-    "serve": "^14.0.1",
     "socket.io-client": "^4.5.1"
   },
   "devDependencies": {
