@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
+    "start": "serve -s build",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "serve -s build"
+    "heroku-postbuild": "npm run build"
   },
   "dependencies": {
     "react": "^18.0.0",
