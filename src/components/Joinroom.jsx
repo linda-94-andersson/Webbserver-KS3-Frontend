@@ -86,6 +86,7 @@ function Joinroom() {
       <div className="form-control">
         <label htmlFor="room">Join room</label>
         <select id="list" onClick={(e) => setRoom(e.target.value)}>
+          <option value="Please select a room in the list below">Select a room:</option>
           {renderRooms()}
         </select>
       </div>
